@@ -1,11 +1,12 @@
 ///Hangman(final project) created by mohamad hasan taghadosi
+
 #include<stdio.h>    /*Header file declaration*/
 
 #include<string.h>   /*<string.h> for strcmp();,strlen(); functions use*/
-
+#include<time.h>
 #include<stdlib.h>
 #include<windows.h>
-int i;
+int i, tedad ;
 
 struct node
 {
@@ -23,7 +24,7 @@ void printlist( struct node * head )
 }
 void copy(char * from,char * to)   /*copy kalame az array to array ddigar*/
 {
-    int i = strlen(from) , j ;
+    int i = strlen(from), j ;
     for( j = 0 ; j < i ; j++ )
         to [ j ] = from [ j ] ;
 }
@@ -57,8 +58,14 @@ struct node * usefile(FILE * fp)   /*use one topic and create linklist*/
         fscanf(fp,"%s",current -> kalame);
         i++ ;
     }
+    current = head ;
+    while(current->next->next!=NULL)
+        current=current->next ;
+    free(current->next) ;
+    current->next = NULL ;
 
     return head;
+
 
 }
 int toolelist(struct node *head)
@@ -71,7 +78,6 @@ int toolelist(struct node *head)
             break;
         head=head->next;
         i++ ;
-        //printf("%d\n",i);
     }
     return i;
 
@@ -94,15 +100,17 @@ char *entekhabe_kalame(struct node * tmp   )
     //printf("%d\n",toolelist(head)) ;
     struct node *cur ;
     char static word[51];
-    //printf("%d\n",toolelist(head));
+    tmp = head ;
+    printf("toolelist = %d\n",toolelist(head));
 
     int kodom = random(toolelist(head)) ;
+    printf("adade entekhabi = %d\n",kodom) ;
     if(kodom==0)
     {
-        cur = tmp ;
         strcpy(word,tmp->kalame) ;
         head=head->next ;
         free(tmp) ;
+        printf("word is %s\n",word) ;
         return word ;
     }
 
@@ -111,9 +119,10 @@ char *entekhabe_kalame(struct node * tmp   )
     //printf("%d\n",kodom);
     //printf("%s\n",tmp->kalame) ;
     //if(kodom==1)
-    printf("adade entekhabi = %d\n",kodom) ;
 
-    for(i=0;i<kodom;i++)
+
+
+    for(i=0; i<kodom; i++)
     {
         if(i==kodom-1)
         {
@@ -122,9 +131,9 @@ char *entekhabe_kalame(struct node * tmp   )
         tmp = tmp ->next ;
 
     }
-    strcpy(word , tmp->kalame);
+    strcpy(word, tmp->kalame);
     cur->next=tmp->next ;
-    printf("kalame pak shode :%s\n",tmp->kalame) ;
+    //printf("kalame pak shode :%s\n",tmp->kalame) ;
     free(tmp) ;
 
     //printf("%s\n",word) ;
@@ -134,18 +143,18 @@ char *entekhabe_kalame(struct node * tmp   )
 }
 int bazi(char *word)
 {
-    int tool = strlen(word) , i ;
+    int tool = strlen(word), i ;
     char hads,wordcopy[51] ;
-    for(i = 0;i<tool;i++)
+    for(i = 0; i<tool; i++)
         wordcopy[i]='-';
     wordcopy[i]='\0';
-    int dorost = 0 , ghalat=0,bord=0 ;
+    int dorost = 0, ghalat=0,bord=0 ;
     while(1)
     {
         printf("hadseto bzan dg ah\n");
         scanf("%c",&hads);
         fflush(stdin);
-        for(i=0;i<tool;i++)
+        for(i=0; i<tool; i++)
         {
             if(word[i]==hads)
             {
@@ -159,7 +168,7 @@ int bazi(char *word)
         {
             ///code ghargh shodan
 
-       // system("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\VideoLAN\VLC.exe" baoon.mp4) ;
+            // system("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\VideoLAN\VLC.exe" baoon.mp4) ;
 
 
             ghalat++;
@@ -171,7 +180,7 @@ int bazi(char *word)
 
             return 0;
         }
-        for(i=0;i<tool;i++)
+        for(i=0; i<tool; i++)
             if(wordcopy[i]=='-')
                 bord++;
         if(bord==0)
@@ -180,8 +189,8 @@ int bazi(char *word)
             return (3*tool-ghalat) ;
         }
         bord=0;
-        }
-        printf("%s\n",wordcopy);
+    }
+    printf("%s\n",wordcopy);
 
 }
 int  play_game(FILE *fp)
@@ -194,29 +203,193 @@ int  play_game(FILE *fp)
     while(tool!=0)
     {
 
-    strcpy(word , entekhabe_kalame(head)) ;
+        strcpy(word, entekhabe_kalame(head)) ;
 
 
-    emtiaz += bazi(word);
-    tool--;
+        emtiaz += bazi(word);
+        tool--;
     }
     return emtiaz;
 }
+struct afrad
+{
+    char nam[51] ;
+    char topic[51] ;
+    double emtiaz = 0;
+
+
+
+
+
+
+};
+struct afrad t;
+int searchb(FILE *fp,char *name)
+{
+    struct afrad *gogo = (struct afrad *)malloc(sizeof(struct afrad)) ;
+    while(!feof(fp))
+    {
+
+        fread(gogo,sizeof(struct afrad),1,fp) ;
+
+        if(strcmpi(gogo->nam,name)==0)
+        {
+            fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
+            return 1;
+        }
+        return 0 ;
+    }
+
+
+}
+
 
 
 
 int main()
 {
+    int shoro,shomare= 1,edame, j, chekonim, kodomtopic;
+    double emtiaz ;
+    char  name[50],topic[51];
+    struct afrad nafar  ;
+    struct afrad *gogo = (struct afrad *)malloc(sizeof(struct afrad)) ;
+    scanf("%s",gogo->nam) ;
+    fflush(stdin) ;
 
     srand (time(NULL));
-    int g=random(19);
     FILE *fp ;
-    fp = fopen("gogo.txt","r") ;
+    fp = fopen("AVAILABLE_TOPICS.txt","r") ;
     if( fp == NULL )
         return -1 ;
+    printf("esmeto bde khengool khan \n") ;
+    scanf("%s",name) ;
+    fflush(stdin) ;
+    printf("mikhay az aval bazi koni:1  ya edame midi:2 \nfaghat age bgi edame midi va save nabashi partet mikonam Biroon :)\n") ;
+    scanf("%d",&chekonim) ;
+    fflush(stdin) ;
+    FILE *yarooha ;
+    yarooha = fopen("afrad.bin","r+b") ;
+    if(chekonim==1)
+        if(searchb(yarooha,name)==1)
+        {
+            while(!feof(fp))
+                {
+                    fscanf(fp,"%s",topic);
+                    fflush(stdin) ;
+                    printf("%d . %s\n",shomare,topic) ;
+                    shomare++ ;
+                }
+                fseek(fp, 0,SEEK_SET) ;
+                scanf("%d",&kodomtopic) ;
+                fflush(stdin) ;
+                for(j=0; j<kodomtopic; j++)
+                    fscanf(fp,"%s",topic);
+                FILE *model ;
+                model = fopen(topic,"r") ;
+                system("cls") ;
 
-    printf("emtiaze in dast = %d\n",play_game(fp));
-    printf("%s\n",head->kalame);
+                clock_t begin = clock();
+                emtiaz = play_game(model);
+                clock_t end = clock();
+                double time_spent = (double)(end - begin) ;
+                emtiaz =emtiaz/( time_spent/60000)  ;
+                fread(gogo,sizeof(struct afrad),1,fp) ;
+                if(gogo->emtiaz<emtiaz)
+                {
+                    strcpy(gogo->topic,topic);
+                    gogo->emtiaz=emtiaz ;
+                    fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
+                    fwrite(gogo,sizeof(struct afrad),1,fp) ;
+
+                }
+                printf("mikhay bazi koni?!\npas 1 ro bzan\nnmikhay 2 ro bzan\n");
+                scanf("%d",&edame) ;
+                fflush(stdin) ;
+                if(edame==2)
+                {
+
+                    printf("bishtarin emtizet = %lf to %s\nkhodafez :)\n",gogo->emtiaz,gogo->topic) ;
+                    return 0 ;
+                }
+
+        }
+
+    if(chekonim==2)
+    {
+
+
+
+
+
+
+        if(searchb(yarooha,name)==1)
+        {
+            printf("gogo") ;
+
+            while(1)
+            {
+
+
+
+                while(!feof(fp))
+                {
+                    fscanf(fp,"%s",topic);
+                    fflush(stdin) ;
+                    printf("%d . %s\n",shomare,topic) ;
+                    shomare++ ;
+                }
+                fseek(fp, 0,SEEK_SET) ;
+                scanf("%d",&kodomtopic) ;
+                fflush(stdin) ;
+                for(j=0; j<kodomtopic; j++)
+                    fscanf(fp,"%s",topic);
+                FILE *model ;
+                model = fopen(topic,"r") ;
+                system("cls") ;
+
+                clock_t begin = clock();
+                emtiaz = play_game(model);
+                clock_t end = clock();
+                double time_spent = (double)(end - begin) ;
+                emtiaz =emtiaz/( time_spent/60000)  ;
+                fread(gogo,sizeof(struct afrad),1,fp) ;
+                if(gogo->emtiaz<emtiaz)
+                {
+                    strcpy(gogo->topic,topic);
+                    gogo->emtiaz=emtiaz ;
+                    fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
+                    fwrite(gogo,sizeof(struct afrad),1,fp) ;
+
+                }
+                printf("mikhay bazi koni?!\npas 1 ro bzan\nnmikhay 2 ro bzan\n");
+                scanf("%d",&edame) ;
+                fflush(stdin) ;
+                if(edame==2)
+                {
+
+                    printf("bishtarin emtizet = %lf to %s\nkhodafez :)\n",gogo->emtiaz,gogo->topic) ;
+                    return 0 ;
+                }
+
+            }
+            else{
+                printf("az bazi man gomsho Biroon :-)\n");
+                return -1 ;
+            }
+        }
+
+
+
+
+
+
+
+    }
+
+
+
+
+
 }
 
 
