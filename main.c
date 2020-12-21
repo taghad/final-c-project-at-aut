@@ -143,7 +143,7 @@ char *entekhabe_kalame(struct node * tmp   )
 }
 int bazi(char *word)
 {
-    int tool = strlen(word), i ;
+    int tool = strlen(word), i , q;
     char hads,wordcopy[51] ;
     for(i = 0; i<tool; i++)
         wordcopy[i]='-';
@@ -154,6 +154,13 @@ int bazi(char *word)
         printf("hadseto bzan dg ah\n");
         scanf("%c",&hads);
         fflush(stdin);
+        if(hads == 'Q')
+        {
+            printf("mikhay edame bedi?1ro vared kon na 2 ro vared kon\n") ;
+            scanf("%d",&q) ;
+            if(q==2)
+                exit(0) ;
+        }
         for(i=0; i<tool; i++)
         {
             if(word[i]==hads)
@@ -215,7 +222,7 @@ struct afrad
 {
     char nam[51] ;
     char topic[51] ;
-    double emtiaz = 0;
+    double emtiaz ;
 
 
 
@@ -237,8 +244,9 @@ int searchb(FILE *fp,char *name)
             fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
             return 1;
         }
-        return 0 ;
+
     }
+    return 0 ;
 
 
 }
@@ -248,25 +256,50 @@ int searchb(FILE *fp,char *name)
 
 int main()
 {
-    int shoro,shomare= 1,edame, j, chekonim, kodomtopic;
+    int shoro,shomare= 1,edame,save , j, chekonim, kodomtopic;
     double emtiaz ;
     char  name[50],topic[51];
     struct afrad nafar  ;
     struct afrad *gogo = (struct afrad *)malloc(sizeof(struct afrad)) ;
-    scanf("%s",gogo->nam) ;
+    //scanf("%s",gogo->nam) ;
     fflush(stdin) ;
 
     srand (time(NULL));
     FILE *fp ;
-    fp = fopen("AVAILABLE_TOPICS.txt","r") ;
+
     if( fp == NULL )
         return -1 ;
     printf("esmeto bde khengool khan \n") ;
     scanf("%s",name) ;
     fflush(stdin) ;
-    printf("mikhay az aval bazi koni:1  ya edame midi:2 \nfaghat age bgi edame midi va save nabashi partet mikonam Biroon :)\n") ;
+    printf("mikhay az aval bazi koni:1  ya edame midi: 2 \nfaghat age bgi edame midi va save nabashi partet mikonam Biroon :)\n") ;
+    printf("age ham mikhay topic ezafe koni 3 ro vared kon\n") ;
     scanf("%d",&chekonim) ;
     fflush(stdin) ;
+    if(chekonim==3)
+    {
+        fp = fopen("AVAILABLE_TOPICS.txt","r+") ;
+        fseek(fp,0,SEEK_END) ;
+        system("cls") ;
+        printf("name topic jadid ro vared kon\n") ;
+        scanf("%s",topic) ;
+        fflush(stdin) ;
+        fprintf(fp,"\n%s",topic) ;
+        fclose(fp) ;
+        system("cls") ;
+        printf("mikhay bazi koni 1 ro bzan na 2 ro bzan\n") ;
+        scanf("%d",&chekonim) ;
+        fflush(stdin) ;
+        if(chekonim==2)
+            return 0 ;
+        printf("mikhay az aval bazi koni:1  ya edame midi: 2  \nfaghat age bgi edame midi va save nabashi partet mikonam Biroon :)\n") ;
+        printf("age ham mikhay topic ezafe koni 3 ro vared kon\n") ;
+        scanf("%d",&chekonim) ;
+        fflush(stdin) ;
+
+
+    }
+    fp = fopen("AVAILABLE_TOPICS.txt","r") ;
     FILE *yarooha ;
     yarooha = fopen("afrad.bin","r+b") ;
     if(chekonim==1)
@@ -294,14 +327,22 @@ int main()
                 double time_spent = (double)(end - begin) ;
                 emtiaz =emtiaz/( time_spent/60000)  ;
                 fread(gogo,sizeof(struct afrad),1,fp) ;
-                if(gogo->emtiaz<emtiaz)
+
+
+                Sleep(500) ;
+                system("cls") ;
+                printf("mikhay save koni?? 1 ro vared kon\nnmikhay 2 ro vared kon\n") ;
+                scanf("%d",&save);
+                if(save==1)
                 {
                     strcpy(gogo->topic,topic);
                     gogo->emtiaz=emtiaz ;
                     fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
                     fwrite(gogo,sizeof(struct afrad),1,fp) ;
-
                 }
+
+
+
                 printf("mikhay bazi koni?!\npas 1 ro bzan\nnmikhay 2 ro bzan\n");
                 scanf("%d",&edame) ;
                 fflush(stdin) ;
@@ -311,8 +352,51 @@ int main()
                     printf("bishtarin emtizet = %lf to %s\nkhodafez :)\n",gogo->emtiaz,gogo->topic) ;
                     return 0 ;
                 }
+                chekonim = 2 ;
 
         }
+        else{
+                while(!feof(yarooha))
+                    fread(gogo,sizeof(struct afrad),1,yarooha) ;
+                while(!feof(fp))
+                {
+                    fscanf(fp,"%s",topic);
+                    fflush(stdin) ;
+                    printf("%d . %s\n",shomare,topic) ;
+                    shomare++ ;
+                }
+                fseek(fp, 0,SEEK_SET) ;
+                scanf("%d",&kodomtopic) ;
+                fflush(stdin) ;
+                for(j=0; j<kodomtopic; j++)
+                    fscanf(fp,"%s",topic);
+                FILE *model ;
+                model = fopen(topic,"r") ;
+                system("cls") ;
+
+                clock_t begin = clock();
+                emtiaz = play_game(model);
+                clock_t end = clock();
+                double time_spent = (double)(end - begin) ;
+                emtiaz =emtiaz/( time_spent/60000)  ;
+                Sleep(500) ;
+                system("cls") ;
+                printf("mikhay save koni?? 1 ro vared kon\nnmikhay 2 ro vared kon\n") ;
+                scanf("%d",&save);
+                if(save==1)
+                {
+                    strcpy(gogo->topic,topic);
+                    gogo->emtiaz=emtiaz ;
+                    fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
+                    fwrite(gogo,sizeof(struct afrad),1,fp) ;
+                }
+
+                chekonim = 2 ;
+                fseek(yarooha,0,SEEK_SET) ;
+
+        }
+        fseek(yarooha,0,SEEK_SET) ;
+        fseek(fp,0,SEEK_SET);
 
     if(chekonim==2)
     {
@@ -324,10 +408,10 @@ int main()
 
         if(searchb(yarooha,name)==1)
         {
-            printf("gogo") ;
 
             while(1)
             {
+                shomare = 1 ;
 
 
 
@@ -355,15 +439,23 @@ int main()
                 fread(gogo,sizeof(struct afrad),1,fp) ;
                 if(gogo->emtiaz<emtiaz)
                 {
+                    Sleep(500) ;
+                    system("cls") ;
+                    printf("mikhay save koni?? 1 ro vared kon\nnmikhay 2 ro vared kon\n") ;
+                    scanf("%d",&save);
+                    if(save==1)
+                    {
                     strcpy(gogo->topic,topic);
                     gogo->emtiaz=emtiaz ;
                     fseek(fp,-sizeof(struct afrad),SEEK_CUR) ;
                     fwrite(gogo,sizeof(struct afrad),1,fp) ;
+                    }
 
                 }
                 printf("mikhay bazi koni?!\npas 1 ro bzan\nnmikhay 2 ro bzan\n");
                 scanf("%d",&edame) ;
                 fflush(stdin) ;
+                fseek(fp,0,SEEK_SET) ;
                 if(edame==2)
                 {
 
@@ -372,10 +464,11 @@ int main()
                 }
 
             }
+
+            }
             else{
                 printf("az bazi man gomsho Biroon :-)\n");
                 return -1 ;
-            }
         }
 
 
